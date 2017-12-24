@@ -1,0 +1,21 @@
+1) Install ionic 2
+2) install path.
+	à) ANDROID_HOME - C:\Users\Andrey\AppData\Local\Android\sdk
+	á) JAVA_HOME - c:\Program Files\Java\jdk1.8.0_152\
+	â) Path - 
+		1) c:\Program Files\Java\jdk1.8.0_152\bin\
+		2) c:\Users\Andrey\AppData\Local\Android\Sdk\tools\
+		3) c:\Users\Andrey\AppData\Local\Android\Sdk\platform-tools\	
+
+3) Run in phond
+ionic cordova run android -l
+
+Debug some errors
+
+1) If can't run in android 4.2.õ (you see blank screen). Run comand in teminal
+	cordova plugin add cordova-plugin-crosswalk-webview
+
+2) Run ghjject in Redmi 4
+	1) ionic cordova build android
+	2) ionic cordova run android -l
+	
