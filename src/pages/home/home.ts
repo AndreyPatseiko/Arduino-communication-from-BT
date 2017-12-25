@@ -2,6 +2,8 @@ import {Component} from '@angular/core';
 import {NavController} from 'ionic-angular';
 import {BluetoothSerial} from '@ionic-native/bluetooth-serial';
 import {AlertController} from 'ionic-angular';
+import {LoadingController} from 'ionic-angular';
+import {NgZone} from '@angular/core';
 
 @Component({
   selector: 'page-home',
@@ -9,16 +11,30 @@ import {AlertController} from 'ionic-angular';
   providers: [BluetoothSerial]
 })
 export class HomePage {
+  public zone = new NgZone({enableLongStackTrace: false});
+  preloader = this.loadingCtrl.create({
+    content: 'Connection ...'
+  });
   public onLed = false;
   public arduinoBTData = [];
   public unpairedDevices: any;
   public pairedDevices: any;
   public gettingDevices: Boolean;
+  public temperatureSensor = 0;
+  public data = {
+    temperatureSensor: 0
+  };
 
   constructor(public navCtrl: NavController,
               private bluetoothSerial: BluetoothSerial,
+              public loadingCtrl: LoadingController,
               private alertCtrl: AlertController) {
-    this.bluetoothSerial.enable()
+    this.preloader.present();
+    this.bluetoothSerial.enable().then(
+      () => {
+        this.connectForInsecure({address: '98:D3:31:FD:28:7E'});
+      }
+    )
   }
 
   connectToBth(data): void {
@@ -33,6 +49,7 @@ export class HomePage {
   connectForInsecure(data): void {
     this.bluetoothSerial.connectInsecure(data.address).subscribe(
       () => {
+        this.preloader.dismiss();
         this.arduinoBTData.push({target: 'Connection', message: 'success'});
         this.subscribereadData();
         this.gettingDevices = false;
@@ -50,11 +67,29 @@ export class HomePage {
 
 
   subscribereadData() {
+    // this.bluetoothSerial.subscribeRawData().subscribe(res => {
+    //   alert('row subscribe ' + res);
+    // });
+
     this.bluetoothSerial.subscribe('|').subscribe(res => {
-      this.arduinoBTData.push(JSON.parse(res.slice(0, -1)))
+      this.zone.run(() => {
+        const resObj = JSON.parse(res.slice(0, -1));
+        this.temperatureSensor = Number(resObj.temperatureSensor);
+      });
+      // this.arduinoBTData.push(resObj);
+      // this.updateData(resObj);
     });
   }
 
+  updateData(obj: any): void {
+    // alert(obj);
+    if (typeof(obj) === 'object') {
+      for (const key in obj) {
+        this.data[key] = obj[key];
+      }
+    }
+
+  }
 
   startScanning(): void {
 
